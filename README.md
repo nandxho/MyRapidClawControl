@@ -208,3 +208,36 @@ npx convex deploy
 - **Glass cards**: `bg-white/[0.02] backdrop-blur-sm border border-white/[0.06]`
 - **Font**: Inter (UI) + JetBrains Mono (code/data)
 - **Dark mode only**
+
+
+---
+
+## Scope Change (Cloud-Ready v2)
+
+This project was updated for cloud deployment (Zeabur/VPS):
+
+- Production mode now uses `SOURCE_MODE=ingest` by default.
+- Filesystem-bound runtime dependencies are disabled in cloud mode.
+- New authenticated ingest endpoint: `POST /api/ingest` with `X-Ingest-Token`.
+- Local filesystem endpoint `/api/workspace` remains available only for `SOURCE_MODE=local` (debug/local development).
+
+### Why
+
+In cloud environments, `~/.openclaw/workspace` is container-local and not the same host as OpenClaw.
+For reliable production data, OpenClaw should push normalized events to ingest endpoints.
+
+### Updated Original Prompt (v2 - Cloud Scope)
+
+> Build a Mission Control dashboard for OpenClaw using Next.js 15 + TypeScript + Tailwind + Convex.
+> Cloud-first requirement: do not rely on local filesystem paths in production.
+> Use authenticated ingest APIs as the primary data source (`/api/ingest`, `X-Ingest-Token`).
+> Keep local file reads optional and gated behind `SOURCE_MODE=local` for development only.
+> Maintain the 8-page UX (Home, OPS, AGENTS, CHAT, CONTENT, COMMS, KNOWLEDGE, CODE),
+> premium dark UI, responsive layout, health polling, search, and documented deploy steps.
+
+### Environment Variables (v2)
+
+- `SOURCE_MODE=ingest|local`
+- `INGEST_AUTH_TOKEN=<secret>`
+- `NEXT_PUBLIC_CONVEX_URL=<url>`
+- `WORKSPACE_PATH=<local-only path>` (used only in local mode)

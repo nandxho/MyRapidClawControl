@@ -2,14 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
+function isLocalMode() {
+  return (process.env.SOURCE_MODE ?? "ingest") === "local";
+}
+
 export async function GET() {
+  if (!isLocalMode()) {
+    return NextResponse.json(
+      {
+        mode: process.env.SOURCE_MODE ?? "ingest",
+        disabled: true,
+        note: "Workspace filesystem access is disabled in cloud mode. Use /api/ingest.",
+      },
+      { status: 200 }
+    );
+  }
+
   const workspacePath = process.env.WORKSPACE_PATH ?? "";
 
   if (!workspacePath) {
-    return NextResponse.json(
-      { error: "WORKSPACE_PATH not configured" },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: "WORKSPACE_PATH not configured" }, { status: 404 });
   }
 
   const exists = fs.existsSync(workspacePath);
@@ -23,19 +35,23 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isLocalMode()) {
+    return NextResponse.json(
+      { error: "Workspace write endpoint disabled in cloud mode." },
+      { status: 403 }
+    );
+  }
+
   const body = (await request.json()) as { path?: string };
 
   if (!body.path || typeof body.path !== "string") {
     return NextResponse.json({ error: "Missing or invalid 'path' field" }, { status: 400 });
   }
 
-  // Sanitize: ensure the path is absolute
   if (!path.isAbsolute(body.path)) {
     return NextResponse.json({ error: "Path must be absolute" }, { status: 400 });
   }
 
-  // In a real app, you'd persist this to env or a config file.
-  // Here we respond with the validated path.
   const exists = fs.existsSync(body.path);
 
   return NextResponse.json({
