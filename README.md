@@ -241,3 +241,43 @@ For reliable production data, OpenClaw should push normalized events to ingest e
 - `INGEST_AUTH_TOKEN=<secret>`
 - `NEXT_PUBLIC_CONVEX_URL=<url>`
 - `WORKSPACE_PATH=<local-only path>` (used only in local mode)
+
+---
+
+## Scope Change (Cloud-Ready v3 - Supabase Free)
+
+This project migrated from Convex-first to **Supabase-first** to keep production costs near zero.
+
+### What changed
+- Primary backend/storage is Supabase (free tier).
+- `POST /api/ingest` persists events into `ingest_events` when Supabase is configured.
+- `GET /api/events` returns recent ingested events.
+- Local filesystem endpoints stay optional and gated by `SOURCE_MODE=local`.
+
+### Updated Original Prompt (v3 - Supabase Scope)
+> Build a Mission Control dashboard for OpenClaw using Next.js 15 + TypeScript + Tailwind.
+> Use Supabase (free tier) as the primary backend for production data.
+> Do not rely on local filesystem paths in production.
+> Use authenticated ingest APIs (`/api/ingest`, `X-Ingest-Token`) as the primary data source.
+> Keep local file reads optional and gated behind `SOURCE_MODE=local` for development only.
+> Maintain the 8-page UX (Home, OPS, AGENTS, CHAT, CONTENT, COMMS, KNOWLEDGE, CODE), premium dark UI, responsive layout, health polling, search, and deploy documentation.
+
+### Supabase SQL (run once)
+```sql
+create table if not exists public.ingest_events (
+  id bigint generated always as identity primary key,
+  source text not null,
+  event_type text not null,
+  event_time timestamptz not null,
+  received_at timestamptz not null default now(),
+  payload jsonb
+);
+create index if not exists idx_ingest_events_received_at on public.ingest_events (received_at desc);
+```
+
+### Production env vars
+- `SOURCE_MODE=ingest`
+- `INGEST_AUTH_TOKEN=<secret>`
+- `SUPABASE_URL=<https://...supabase.co>`
+- `SUPABASE_SERVICE_ROLE_KEY=<service role key>`
+- `SUPABASE_ANON_KEY=<anon key>`

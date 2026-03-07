@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/layout/Shell";
-import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
+import { AppDataProvider } from "@/providers/AppDataProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,9 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
-        <ConvexClientProvider>
+        <AppDataProvider>
           <Shell>{children}</Shell>
-        </ConvexClientProvider>
+        </AppDataProvider>
       </body>
     </html>
   );
