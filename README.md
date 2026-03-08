@@ -281,3 +281,37 @@ create index if not exists idx_ingest_events_received_at on public.ingest_events
 - `SUPABASE_URL=<https://...supabase.co>`
 - `SUPABASE_SERVICE_ROLE_KEY=<service role key>`
 - `SUPABASE_ANON_KEY=<anon key>`
+
+---
+
+## Zeabur Docker Deploy
+
+This repo includes a production Dockerfile for Zeabur.
+
+### Required env vars
+- `SOURCE_MODE=ingest`
+- `INGEST_AUTH_TOKEN=<random secret>`
+- `SUPABASE_URL=https://<project-ref>.supabase.co`
+- `SUPABASE_ANON_KEY=<anon key>`
+- `SUPABASE_SERVICE_ROLE_KEY=<service role key>`
+
+### Build/Run locally with Docker
+```bash
+docker build -t myrapidclawcontrol:latest .
+docker run --rm -p 3000:3000 \
+  -e SOURCE_MODE=ingest \
+  -e INGEST_AUTH_TOKEN=change_me \
+  -e SUPABASE_URL=https://example.supabase.co \
+  -e SUPABASE_ANON_KEY=anon \
+  -e SUPABASE_SERVICE_ROLE_KEY=service \
+  myrapidclawcontrol:latest
+```
+
+### Zeabur
+1. Deploy from GitHub repo `MyRapidClawControl` (branch `main`).
+2. Ensure build method uses the included `Dockerfile`.
+3. Add all required env vars.
+4. Redeploy.
+5. Validate:
+   - `GET /api/health`
+   - `POST /api/ingest` with `X-Ingest-Token`
